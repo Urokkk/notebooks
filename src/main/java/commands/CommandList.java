@@ -1,10 +1,14 @@
 package commands;
 
 import controllers.ApplicationContext;
+import model.Address;
 import model.Person;
 import model.Phone;
 import services.StorageService;
 
+
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.List;
 
 /**
@@ -35,9 +39,12 @@ public class CommandList extends AbstractCommand
     private void printPerson(Person person)
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("Person: ").append(person.getName()).append("\n").append("phones: ");
+        sb.append("ID: ").append(person.getId()).append("\n").append("Person: ").append(person.getName()).append("\n").append("phones: ");
         for (Phone phone : person.getPhones())
             sb.append(phone.getPhone()).append("\n");
+        sb.append("addresses: ");
+            for (Address address : person.getAddresses())
+                    sb.append(address.getAddress()).append("\n");
 
         System.out.println(sb.toString());
     }

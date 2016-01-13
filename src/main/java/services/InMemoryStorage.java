@@ -1,6 +1,7 @@
 package services;
 
 import com.google.inject.Singleton;
+import model.Address;
 import model.Book;
 import model.Person;
 import model.Phone;
@@ -19,13 +20,17 @@ import java.util.List;
 public class InMemoryStorage implements StorageService
 {
     @Override
-    public void add(String personName, String phone)
+    public void add(String personName, String phone, String address)
     {
         Person person = new Person(personName);
 
         person.getPhones().add(new Phone(person, phone));
+        person.getAddresses().add(new Address(person, address));
         book.getPersons().add(person);
     }
+
+    @Override
+    public void delete(String id) {    }
 
     @Override
     public List<Person> list()
@@ -39,6 +44,9 @@ public class InMemoryStorage implements StorageService
         });
         return copy;
     }
+
+    @Override
+    public void update(String id, String person, String phone, String address) {    }
 
     public Book defaultBook()
     {

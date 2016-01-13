@@ -30,7 +30,7 @@ public class SimpleCommandLineController implements CommandLineController
         String cmd_name = null;
         String cmd_args = null;
 
-        String[] row_data = StringUtils.split(commandLine);
+        String[] row_data = StringUtils.split(commandLine, '|');
 
         if (row_data == null || row_data.length == 0)
             return new Params("", "");
@@ -38,7 +38,7 @@ public class SimpleCommandLineController implements CommandLineController
         cmd_name = row_data[0];
 
         String[] row_args = Arrays.copyOfRange(row_data, 1, row_data.length);
-        cmd_args = StringUtils.join(row_args, " ");
+        cmd_args = StringUtils.join(row_args, "|");
 
         return new Params(cmd_name, cmd_args);
     }

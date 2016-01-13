@@ -1,3 +1,4 @@
+import model.Address;
 import org.junit.Assert;
 import model.Book;
 import model.Person;
@@ -14,10 +15,11 @@ public class BookTest {
     @Test
     public void fillBook()
     {
+
         Set<Person> persons = new HashSet<Person>();
-        persons.add(new Person("Ivan Ivanovich", new HashSet()));
-        persons.add(new Person("Petr", new HashSet()));
-        persons.add(new Person("Sidor", new HashSet()));
+        persons.add(new Person("Ivan Ivanovich", new HashSet(), new HashSet()));
+        persons.add(new Person("Petr", new HashSet(), new HashSet()));
+        persons.add(new Person("Sidor", new HashSet(), new HashSet()));
         Book book = new Book(persons);
 
         Assert.assertNotNull(book.getPersons());

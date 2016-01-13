@@ -3,9 +3,7 @@ package commands.factories;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import commands.*;
-import commands.builders.CommandAddBuilder;
-import commands.builders.CommandExitBuilder;
-import commands.builders.CommandListBuilder;
+import commands.builders.*;
 import services.DBModule;
 
 /**
@@ -36,6 +34,8 @@ public class ConsoleCommandsFactory extends CommandFacroryBase
         register(CommandAdd.NAME,  injector.getInstance(CommandAddBuilder.class));
         register(CommandList.NAME, injector.getInstance(CommandListBuilder.class));
         register(CommandExit.NAME, injector.getInstance(CommandExitBuilder.class));
+        register(CommandDelete.NAME, injector.getInstance(CommandDeleteBuilder.class));
+        register(CommandUpdate.NAME, injector.getInstance(CommandUpdateBuilder.class));
     }
 
 

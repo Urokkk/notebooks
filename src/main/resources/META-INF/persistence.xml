@@ -9,6 +9,7 @@
         <class>model.Book</class>
         <class>model.Person</class>
         <class>model.Phone</class>
+        <class>model.Address</class>
 
         <properties>
             <property name="hibernate.cach.provider_class" value="org.hibernate.cache.NoCacheProvider"/>

@@ -33,7 +33,7 @@ public class DBModule extends AbstractModule
          * В {@link configs.DBConnection} можно найти настройки соединения с БД для каждого из
          * сервисов, зависящих от БД.
          */
-        bind(StorageService.class).to(HibernateStorageService.class);
+        bind(StorageService.class).to(JDBCStorageService.class);
     }
 
     @Provides

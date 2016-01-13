@@ -2,10 +2,10 @@ package services;
 
 import com.google.inject.Singleton;
 import configs.DBConnection;
+import model.Address;
 import model.Book;
 import model.Person;
 import model.Phone;
-import org.apache.commons.lang3.StringUtils;
 
 
 import java.sql.*;
@@ -21,15 +21,26 @@ import java.util.List;
 public class JDBCStorageService implements StorageService
 {
     @Override
-    public void add(String personName, String phone)
+    public void add(String personName, String phone, String address)
     {
-        TransactionScript.getInstance().addPerson(personName, phone, defaultBook());
+
+        TransactionScript.getInstance().addPerson(personName, phone, address, defaultBook());
+    }
+
+    @Override
+    public void delete(String id) {
+        TransactionScript.getInstance().deletePerson(id, defaultBook());
     }
 
     @Override
     public List<Person> list()
     {
         return TransactionScript.getInstance().listPersons();
+    }
+
+    @Override
+    public void update(String id, String person, String phone, String address) {
+        TransactionScript.getInstance().updatePerson(id,person,phone,address, defaultBook());
     }
 
     @Override
@@ -82,17 +93,27 @@ public class JDBCStorageService implements StorageService
             try
             {
                 PreparedStatement statement = connection.prepareStatement(
-                        "select name, phone from book b \n" +
+                        "select name, phone, address, p.id from book b \n" +
                         "inner join person p on b.id = p.book_id \n" +
-                        "inner join phone ph on p.id = ph.person_id\n");
+                        "inner join phone ph on p.id = ph.person_id\n" +
+                        "inner join address ad on p.id = ad.person_id\n");
 
                 ResultSet r_set = statement.executeQuery();
+
+                /*PreparedStatement staitment = connection.prepareStatement("Select address.address, address.person_id, person.name, person.id, phone.phone, phone.person_id" +
+                        " from person, address, phone" +
+                        " where address.person_id = phone.person_id = person.id and" +
+                        "address.address =? and person.name =? and phone.phone =?");*/
 
                 while (r_set.next())
                 {
                     Person p = new Person(r_set.getString("name"));
                     Phone ph = new Phone(p, r_set.getString("phone"));
+                    Address ad = new Address(p, r_set.getString("address"));
+
+                    p.setId(r_set.getLong("id"));
                     p.getPhones().add(ph);
+                    p.getAddresses().add(ad);
                     result.add(p);
                 }
 
@@ -104,7 +125,7 @@ public class JDBCStorageService implements StorageService
             return result;
         }
 
-        public void addPerson(String person, String phone, Book book)
+        public void addPerson(String person, String phone, String address, Book book)
         {
             try
             {
@@ -120,10 +141,10 @@ public class JDBCStorageService implements StorageService
 
                 PreparedStatement addPerson = connection.prepareStatement("insert into person (book_id, name) values (?, ?)", Statement.RETURN_GENERATED_KEYS);
                 PreparedStatement addPhone  = connection.prepareStatement("insert into phone (person_id, phone) values (?, ?)", Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement addAddress = connection.prepareStatement("insert into address (person_id, address) values (?, ?)", Statement.RETURN_GENERATED_KEYS);
 
                 addPerson.setLong(1, book.getId());
                 addPerson.setString (2, person);
-
                 addPerson.execute();
 
                 ResultSet auto_pk = addPerson.getGeneratedKeys();
@@ -133,13 +154,101 @@ public class JDBCStorageService implements StorageService
                     addPhone.setInt(1, id);
                     addPhone.setString(2, phone);
                     addPhone.execute();
+
+                    addAddress.setInt(1, id);
+                    addAddress.setString(2, address);
+                    addAddress.execute();
                 }
-
-
 
             }
             catch (Exception e)
             {
+                System.out.println("ERROR: Person can not be added");
+                e.printStackTrace();
+            }
+        }
+
+        public void deletePerson(String ID, Book book)
+        {
+            try
+            {
+                Long id = Long.parseLong(ID);
+                if (book.getId() == null)
+                {
+                    throw  new Exception("ERROR: Table book does not exist");
+                }
+
+                PreparedStatement staitment = connection.prepareStatement("Select name from person where book_id=? and id=?");
+                staitment.setLong (1, book.getId());
+                staitment.setLong (2, id);
+
+                ResultSet queryResult = staitment.executeQuery();
+
+                while (queryResult.next())
+                {
+                    PreparedStatement deletedPerson = connection.prepareStatement("delete from person where book_id=? and id=?");
+                    PreparedStatement deletedPhone = connection.prepareStatement("delete from phone where person_id =?");
+                    PreparedStatement deletedAdress = connection.prepareStatement("delete from address where person_id =?");
+
+                    deletedPhone.setLong(1, id);
+                    deletedPhone.executeUpdate();
+
+                    deletedAdress.setLong(1, id);
+                    deletedAdress.executeUpdate();
+
+                    deletedPerson.setLong(1, book.getId());
+                    deletedPerson.setLong(2, id);
+                    deletedPerson.executeUpdate();
+                }
+
+            }
+            catch (Exception e)
+            {
+                System.out.println("ERROR: Record can not deleted");
+                e.printStackTrace();
+            }
+        }
+
+        public void updatePerson(String ID, String person, String phone, String address, Book book)
+        {
+            try
+            {
+                Long id = Long.parseLong(ID);
+                if (book.getId() == null)
+                {
+                    throw  new Exception("ERROR: Table book does not exist");
+                }
+
+                PreparedStatement staitment = connection.prepareStatement("Select name from person where book_id=? and id=?");
+                staitment.setLong (1, book.getId());
+                staitment.setLong (2, id);
+
+                ResultSet queryResult = staitment.executeQuery();
+
+                while (queryResult.next())
+                {
+                    PreparedStatement updatePerson = connection.prepareStatement("update person set name = ? where book_id = ? and id=?");
+                    PreparedStatement updatePhone = connection.prepareStatement("update phone set phone = ? where person_id=?");
+                    PreparedStatement updateAdress = connection.prepareStatement("update address set address = ? where person_id=?");
+
+                    updatePhone.setString(1, phone);
+                    updatePhone.setLong(2, id);
+                    updatePhone.executeUpdate();
+
+                    updateAdress.setString(1, address);
+                    updateAdress.setLong(2, id);
+                    updateAdress.executeUpdate();
+
+                    updatePerson.setString(1, person);
+                    updatePerson.setLong(2, book.getId());
+                    updatePerson.setLong(3, id);
+                    updatePerson.executeUpdate();
+                }
+
+            }
+            catch (Exception e)
+            {
+                System.out.println("ERROR: Record can not updated");
                 e.printStackTrace();
             }
         }
